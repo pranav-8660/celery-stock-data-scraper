@@ -19,6 +19,32 @@ services:
     restart: always
     ports:
       - "6379:6379"
+  
+  app:
+    build: .
+    container_name: fastapi_scrapper_app
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: "postgresql://lic_user:123456789@postgres_db:5432/lic_db"
+      REDIS_URL: "redis://redis_brocker:6379/0"
+  
+  celery_worker:
+    build: .
+    container_name: celery_worker
+    restart: always
+    depends_on:
+      - redis
+      - app
+    environment:
+      DATABASE_URL: "postgresql://lic_user:123456789@postgres_db:5432/lic_db"
+      REDIS_URL: "redis://redis_brocker:6379/0"
+    command: ["sh","run_celery.sh"]
+    
       
 volumes:
   pgdata:
